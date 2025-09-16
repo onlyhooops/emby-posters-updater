@@ -1,6 +1,6 @@
 # Emby 封面更新工具 - 脱敏版使用说明
 
-本说明对应脚本 `update_collection_posters_extended_sanitized.py`。
+本说明对应脚本 `emby-poster-updater.py`。
 脚本已移除敏感配置，使用前请先填写必要参数。
 
 ## 功能说明
@@ -29,7 +29,7 @@ USER_ID = "YOUR_USER_ID"
 ## 运行
 交互模式：
 ```bash
-python3 update_collection_posters_extended_sanitized.py
+python3 emby-poster-updater.py
 ```
 会提示选择：
 - 1) 合集 Collections
