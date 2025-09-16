@@ -28,7 +28,6 @@ python3 emby-poster-updater.py
 - 纯 Emby API 实现（不访问文件系统）
 - 通过 RemoteImages API 将首个带主封面的影片图像复制为目标封面
 - 交互式命令行，支持非交互场景自动化
-- **更新封面为合集/流派/标签中第一部影片文件夹中的“poster.jpg”**
 
 ## 填写配置
 打开脚本顶部并填写：
