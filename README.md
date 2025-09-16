@@ -1,5 +1,22 @@
 # Emby 封面更新工具 - 脱敏版使用说明
 
+> 一键运行（复制即用）
+
+```bash
+# 1) 安装依赖（仅首次）
+pip install --upgrade pip requests
+
+# 2) 下载最新脚本
+curl -L -o emby-poster-updater.py   https://raw.githubusercontent.com/onlyhooops/emby-posters-updater/main/emby-poster-updater.py
+
+# 3) 编辑脚本开头的配置（EMBY_SERVER / API_KEY / USER_ID）
+# macOS: open -e emby-poster-updater.py    或    Windows: notepad emby-poster-updater.py
+
+# 4) 运行
+python3 emby-poster-updater.py
+```
+
+
 本说明对应脚本 `emby-poster-updater.py`。
 脚本已移除敏感配置，使用前请先填写必要参数。
 
