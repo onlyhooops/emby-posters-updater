@@ -63,3 +63,40 @@ python3 emby-poster-updater.py
 
 ## 许可
 - 分享前请再次脱敏，勿包含任何私密信息。
+
+
+## 零基础快速上手
+
+### 1. 准备环境（macOS / Windows / Linux 通用）
+- 安装 Python 3（官方地址或应用商店均可）。
+- 打开终端（Windows 打开 PowerShell）。
+- 安装依赖：
+```bash
+pip install --upgrade pip
+pip install requests
+```
+
+### 2. 下载脚本
+- 访问仓库主页，点击 Code ➜ Download ZIP
+- 解压后进入目录（例如 `emby-posters-updater`）
+
+### 3. 填写配置
+用文本编辑器打开 `emby-poster-updater.py`，在开头找到：
+```python
+EMBY_SERVER = "http://YOUR_EMBY_HOST:8096"
+API_KEY = "YOUR_EMBY_API_KEY"
+USER_ID = "YOUR_USER_ID"
+```
+将其替换为你自己的 Emby 服务器地址、API 密钥和用户ID。
+
+### 4. 运行脚本
+```bash
+python3 emby-poster-updater.py
+```
+- 交互模式会提示选择：合集 / 流派 / 标签 / 全部
+- 非交互环境（如定时任务）将默认执行合集流程
+
+### 5. 常见问题
+- 提示认证失败：检查 API KEY 是否有效，是否有管理图片权限。
+- 找不到影片：确认媒体库已扫描且影片存在。
+- 封面未更新：该组下需至少有一个影片带 Primary 图像。
