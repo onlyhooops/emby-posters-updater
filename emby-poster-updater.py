@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Emby 封面更新工具（合集 / 流派 / 标签）- 脱敏版
+Emby 封面更新工具（合集 / 流派 / 标签）v2.0
 
 说明：本脚本为可分享版本，已移除服务器地址与密钥等敏感信息。
 使用前请先填写脚本开头的 EMBY_SERVER、API_KEY、USER_ID。
@@ -9,6 +9,12 @@ Emby 封面更新工具（合集 / 流派 / 标签）- 脱敏版
 - 通过 Emby API 清空并更新「合集」「流派」「标签」的封面
 - 纯 API 实现（不访问文件系统），通过 RemoteImages API 复制封面
 - 支持交互式菜单，非交互环境下自动选择默认流程
+- v2.0 更新：适配 Emby v4.9+ 新版API，保持向后兼容
+
+API 更新说明（v2.0）：
+- 删除图像：支持新版 POST /Items/{Id}/Images/{Type}/Delete
+- 上传图像：支持新版 Type 参数（替代 ImageType）
+- 自动回退到旧版API，兼容 Emby v4.0+
 """
 
 import requests
@@ -83,14 +89,29 @@ def get_items_by_tag(tag_name):
 
 # ================= 核心辅助函数 =================
 def clear_item_images(item_id, item_name):
+    """清空项目的所有图像
+    
+    v2.0: 优先使用新版API (POST /Items/{Id}/Images/{Type}/Delete)
+    如果失败则回退到旧版API (DELETE /Items/{Id}/Images/{Type})
+    """
     ok_types = 0
     for t in ["Primary", "Art", "Thumb", "Banner"]:
-        r = safe_request("DELETE", f"{EMBY_SERVER}/Items/{item_id}/Images/{t}", headers=HEADERS)
+        # 尝试新版API (Emby v4.9+)
+        url_new = f"{EMBY_SERVER}/Items/{item_id}/Images/{t}/Delete"
+        r = safe_request("POST", url_new, headers=HEADERS)
+        
         if r and r.status_code in (200, 204):
             ok_types += 1
             ok(f"已清空 {item_name} 的 {t}")
         else:
-            warn(f"清空 {item_name} 的 {t} 失败")
+            # 回退到旧版API (Emby v4.0-4.8)
+            url_old = f"{EMBY_SERVER}/Items/{item_id}/Images/{t}"
+            r_old = safe_request("DELETE", url_old, headers=HEADERS)
+            if r_old and r_old.status_code in (200, 204):
+                ok_types += 1
+                ok(f"已清空 {item_name} 的 {t} (旧版API)")
+            else:
+                warn(f"清空 {item_name} 的 {t} 失败")
     return ok_types > 0
 
 def pick_first_movie_with_primary(items):
@@ -103,13 +124,31 @@ def pick_first_movie_with_primary(items):
     return None
 
 def set_poster_from_item(target_id, target_name, source_item_id):
+    """使用另一个项目的Primary图像作为封面
+    
+    v2.0: 优先使用新版API (Type参数 + JSON body)
+    如果失败则回退到旧版API (ImageType参数)
+    """
     src_url = f"{EMBY_SERVER}/Items/{source_item_id}/Images/Primary"
     dl_url = f"{EMBY_SERVER}/Items/{target_id}/RemoteImages/Download"
-    params = {"ImageUrl": src_url, "ProviderName": "Manual", "ImageType": "Primary"}
-    r = safe_request("POST", dl_url, headers=HEADERS, params=params)
-    if r and r.status_code in (200, 204):
+    
+    # 尝试新版API (Emby v4.9+)
+    params_new = {"Type": "Primary", "ImageUrl": src_url, "ProviderName": "Manual"}
+    body = {}  # 新版API需要JSON body
+    r = requests.post(dl_url, headers=HEADERS, params=params_new, json=body)
+    
+    if r.status_code in (200, 204):
         ok(f"已更新 {target_name} 的封面")
         return True
+    
+    # 回退到旧版API (Emby v4.0-4.8)
+    params_old = {"ImageType": "Primary", "ImageUrl": src_url, "ProviderName": "Manual"}
+    r_old = requests.post(dl_url, headers=HEADERS, params=params_old)
+    
+    if r_old.status_code in (200, 204):
+        ok(f"已更新 {target_name} 的封面 (旧版API)")
+        return True
+    
     err(f"更新 {target_name} 的封面失败")
     return False
 
